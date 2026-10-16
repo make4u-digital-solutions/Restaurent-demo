@@ -1,17 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Phone, Calendar, Clock, MapPin } from "lucide-react";
+import { Menu as MenuIcon, X, Phone, Calendar, Clock, MapPin, Utensils } from "lucide-react";
 import { restaurantData } from "../data/restaurantData";
 
 export default function Navbar({ onOpenReservation }) {
+  const pathname = usePathname();
+  const isMenuPage = pathname === "/menu";
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 40) {
+      if (window.scrollY > 30) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
@@ -47,87 +52,113 @@ export default function Navbar({ onOpenReservation }) {
   }, [mobileMenuOpen]);
 
   const navLinks = [
-    { name: "Home", href: "#hero" },
-    { name: "About", href: "#about" },
-    { name: "Dishes", href: "#signature-dishes" },
-    { name: "Gallery", href: "#gallery" },
-    { name: "Reviews", href: "#reviews" },
-    { name: "Contact", href: "#contact" },
+    { name: "Home", href: "/", hash: "#hero" },
+    { name: "Menu", href: "/menu", isPage: true },
+    { name: "About", href: "/#about", hash: "#about" },
+    { name: "Dishes", href: "/#signature-dishes", hash: "#signature-dishes" },
+    { name: "Gallery", href: "/#gallery", hash: "#gallery" },
+    { name: "Reviews", href: "/#reviews", hash: "#reviews" },
+    { name: "Contact", href: "/#contact", hash: "#contact" },
   ];
 
-  const handleNavClick = (e, href) => {
-    e.preventDefault();
+  const handleNavClick = (e, link) => {
     setMobileMenuOpen(false);
-    const target = document.querySelector(href);
-    if (target) {
-      const navOffset = 80;
-      const elementPosition = target.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
+    // If on homepage and clicking an in-page hash
+    if (!isMenuPage && link.hash) {
+      e.preventDefault();
+      const target = document.querySelector(link.hash);
+      if (target) {
+        const navOffset = 80;
+        const elementPosition = target.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+      }
     }
   };
+
+  const isLightHeader = isMenuPage || isScrolled;
 
   return (
     <>
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-          isScrolled
+          isLightHeader
             ? "bg-[#FAF8F3]/95 backdrop-blur-md border-b border-[#E8E3D9] shadow-xs py-3.5"
             : "bg-transparent text-white py-5"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Logo Brand */}
-          <a
-            href="#hero"
-            onClick={(e) => handleNavClick(e, "#hero")}
+          <Link
+            href="/"
+            onClick={(e) => {
+              if (!isMenuPage) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
             className="group flex flex-col focus:outline-none"
           >
             <span
               className={`font-serif text-2xl sm:text-3xl font-normal tracking-[0.2em] uppercase transition-colors ${
-                isScrolled ? "text-[#24231F]" : "text-white"
+                isLightHeader ? "text-[#24231F]" : "text-white"
               }`}
             >
               {restaurantData.brand.name}
             </span>
             <span
               className={`text-[9px] sm:text-[10px] tracking-[0.3em] uppercase -mt-1 font-sans transition-colors ${
-                isScrolled ? "text-[#6E6B65]" : "text-white/80"
+                isLightHeader ? "text-[#6E6B65]" : "text-white/80"
               }`}
             >
               Mediterranean & Hearth
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav
             aria-label="Primary Navigation"
-            className="hidden md:flex items-center space-x-8"
+            className="hidden md:flex items-center space-x-7"
           >
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                onClick={(e) => handleNavClick(e, link.href)}
-                className={`relative text-xs uppercase tracking-[0.18em] font-medium transition-colors hover:text-[#B85D36] py-1 ${
-                  isScrolled ? "text-[#24231F]" : "text-white/90 hover:text-white"
-                } focus:outline-none focus:ring-1 focus:ring-[#B85D36] rounded-xs`}
-              >
-                {link.name}
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = link.isPage && pathname === link.href;
+
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={(e) => handleNavClick(e, link)}
+                  className={`relative text-xs uppercase tracking-[0.18em] font-medium transition-colors py-1.5 px-1 ${
+                    isActive
+                      ? "text-[#B85D36] font-bold"
+                      : isLightHeader
+                      ? "text-[#24231F] hover:text-[#B85D36]"
+                      : "text-white/90 hover:text-white"
+                  } focus:outline-none focus:ring-1 focus:ring-[#B85D36] rounded-xs`}
+                >
+                  <span>{link.name}</span>
+                  {isActive && (
+                    <motion.span
+                      layoutId="navIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#B85D36] rounded-full"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Right CTA & Mobile Toggle */}
           <div className="flex items-center gap-3">
             <button
               onClick={onOpenReservation}
-              className={`hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs uppercase tracking-[0.15em] font-semibold transition-all duration-300 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#B85D36]/50 ${
-                isScrolled
+              className={`hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs uppercase tracking-[0.15em] font-semibold transition-all duration-300 shadow-xs focus:outline-none focus:ring-2 focus:ring-[#B85D36]/50 cursor-pointer ${
+                isLightHeader
                   ? "bg-[#B85D36] text-white hover:bg-[#9C4B29]"
                   : "bg-white text-[#24231F] hover:bg-[#FAF8F3] hover:text-[#B85D36]"
               }`}
@@ -142,7 +173,7 @@ export default function Navbar({ onOpenReservation }) {
               aria-expanded={mobileMenuOpen}
               aria-label="Toggle navigation menu"
               className={`md:hidden p-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#B85D36] ${
-                isScrolled
+                isLightHeader
                   ? "text-[#24231F] hover:bg-[#EAE5DC]"
                   : "text-white hover:bg-white/20"
               }`}
@@ -150,7 +181,7 @@ export default function Navbar({ onOpenReservation }) {
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
               ) : (
-                <Menu className="w-6 h-6" />
+                <MenuIcon className="w-6 h-6" />
               )}
             </button>
           </div>
@@ -201,21 +232,39 @@ export default function Navbar({ onOpenReservation }) {
                 </div>
 
                 {/* Navigation Links */}
-                <nav className="mt-8 flex flex-col space-y-4">
-                  {navLinks.map((link, idx) => (
-                    <motion.a
-                      key={link.name}
-                      href={link.href}
-                      onClick={(e) => handleNavClick(e, link.href)}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.05 + 0.1 }}
-                      className="text-lg font-serif tracking-wide text-[#24231F] hover:text-[#B85D36] transition-colors py-2 border-b border-[#F0ECE2] flex items-center justify-between"
-                    >
-                      <span>{link.name}</span>
-                      <span className="text-xs text-[#B85D36] font-sans">0{idx + 1}</span>
-                    </motion.a>
-                  ))}
+                <nav className="mt-8 flex flex-col space-y-3">
+                  {navLinks.map((link, idx) => {
+                    const isActive = link.isPage && pathname === link.href;
+
+                    return (
+                      <motion.div
+                        key={link.name}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.04 + 0.1 }}
+                      >
+                        <Link
+                          href={link.href}
+                          onClick={(e) => handleNavClick(e, link)}
+                          className={`text-lg font-serif tracking-wide transition-colors py-2.5 border-b border-[#F0ECE2] flex items-center justify-between ${
+                            isActive
+                              ? "text-[#B85D36] font-semibold pl-2 bg-[#B85D36]/8 rounded-lg border-b-transparent"
+                              : "text-[#24231F] hover:text-[#B85D36]"
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            {link.isPage && (
+                              <Utensils className="w-4 h-4 text-[#B85D36]" />
+                            )}
+                            {link.name}
+                          </span>
+                          <span className="text-xs text-[#B85D36] font-sans">
+                            0{idx + 1}
+                          </span>
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
                 </nav>
 
                 {/* Practical info in drawer */}
@@ -247,7 +296,7 @@ export default function Navbar({ onOpenReservation }) {
                     setMobileMenuOpen(false);
                     onOpenReservation();
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-[#B85D36] text-white font-semibold text-xs uppercase tracking-[0.15em] hover:bg-[#9C4B29] transition-colors shadow-md"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-full bg-[#B85D36] text-white font-semibold text-xs uppercase tracking-[0.15em] hover:bg-[#9C4B29] transition-colors shadow-md cursor-pointer"
                 >
                   <Calendar className="w-4 h-4" />
                   <span>Reserve a Table</span>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Compass, ArrowUp, Heart } from "lucide-react";
 import { restaurantData } from "../data/restaurantData";
 
@@ -30,25 +31,28 @@ export default function Footer({ onOpenReservation }) {
   };
 
   const navLinks = [
-    { name: "Home", href: "#hero" },
-    { name: "About", href: "#about" },
-    { name: "Signature Dishes", href: "#signature-dishes" },
-    { name: "Gallery", href: "#gallery" },
-    { name: "Reviews", href: "#reviews" },
-    { name: "Contact", href: "#contact" },
+    { name: "Home", href: "/" },
+    { name: "Menu", href: "/menu", isPage: true },
+    { name: "About", href: "/#about", hash: "#about" },
+    { name: "Signature Dishes", href: "/#signature-dishes", hash: "#signature-dishes" },
+    { name: "Gallery", href: "/#gallery", hash: "#gallery" },
+    { name: "Reviews", href: "/#reviews", hash: "#reviews" },
+    { name: "Contact", href: "/#contact", hash: "#contact" },
   ];
 
-  const handleLinkClick = (e, href) => {
-    e.preventDefault();
-    const target = document.querySelector(href);
-    if (target) {
-      const navOffset = 80;
-      const elementPosition = target.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
+  const handleLinkClick = (e, link) => {
+    if (link.hash && window.location.pathname === "/") {
+      e.preventDefault();
+      const target = document.querySelector(link.hash);
+      if (target) {
+        const navOffset = 80;
+        const elementPosition = target.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+      }
     }
   };
 
@@ -112,13 +116,13 @@ export default function Footer({ onOpenReservation }) {
             <ul className="space-y-2.5 text-sm">
               {navLinks.map((link) => (
                 <li key={link.name}>
-                  <a
+                  <Link
                     href={link.href}
-                    onClick={(e) => handleLinkClick(e, link.href)}
+                    onClick={(e) => handleLinkClick(e, link)}
                     className="text-[#6E6B65] hover:text-[#B85D36] transition-colors"
                   >
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
               <li>

@@ -5,6 +5,7 @@ import AnnouncementBar from "../components/AnnouncementBar";
 import Navbar from "../components/Navbar";
 import HeroSection from "../components/HeroSection";
 import QuickInfoStrip from "../components/QuickInfoStrip";
+import HomeCategoryShowcase from "../components/HomeCategoryShowcase";
 import SignatureDishes from "../components/SignatureDishes";
 import AboutSection from "../components/AboutSection";
 import WhyChooseUs from "../components/WhyChooseUs";
@@ -37,6 +38,9 @@ export default function Home() {
 
         {/* Section 4: Quick Information Strip */}
         <QuickInfoStrip />
+
+        {/* Category Showcase Section */}
+        <HomeCategoryShowcase />
 
         {/* Section 5: Signature Dishes / Bestsellers */}
         <SignatureDishes onOpenReservation={openReservation} />
